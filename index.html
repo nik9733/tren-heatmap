@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>tren // heatmap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#0A0E14;
+    --surface:#10151E;
+    --border:#1C2330;
+    --text:#E8ECF1;
+    --muted:#6B7684;
+    --bull:#26D07C;
+    --bull-bright:#3AFFA0;
+    --bear:#EF4444;
+    --bear-bright:#FF6B6B;
+    --accent:#4DA8FF;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0; padding:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+
+  .wrap{
+    max-width:520px;
+    margin:0 auto;
+    padding:20px 16px 40px;
+  }
+
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:22px;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+  }
+  .brand .mark{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:800;
+    font-size:20px;
+    letter-spacing:-0.02em;
+  }
+  .brand .sub{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--muted);
+    letter-spacing:0.02em;
+  }
+  .live{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--muted);
+  }
+  .dot{
+    width:7px; height:7px;
+    border-radius:50%;
+    background:var(--bull);
+    box-shadow:0 0 0 0 rgba(38,208,124,0.6);
+    animation:pulse 2s infinite;
+  }
+  .dot.stale{ background:var(--muted); animation:none; }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(38,208,124,0.55); }
+    70%{ box-shadow:0 0 0 7px rgba(38,208,124,0); }
+    100%{ box-shadow:0 0 0 0 rgba(38,208,124,0); }
+  }
+
+  .legend{
+    display:flex;
+    justify-content:space-between;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--muted);
+    margin-bottom:10px;
+    padding:0 2px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:10px;
+  }
+
+  .tile{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:16px 16px 14px;
+    position:relative;
+    overflow:hidden;
+    transition:transform .15s ease;
+  }
+  .tile::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    opacity:var(--glow, 0);
+    background:radial-gradient(circle at 85% -10%, var(--glow-color, transparent), transparent 60%);
+    pointer-events:none;
+  }
+  .tile-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+  }
+  .code{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.02em;
+    color:var(--text);
+  }
+  .rank{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--muted);
+  }
+  .value{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:800;
+    font-size:26px;
+    margin-top:6px;
+    line-height:1;
+  }
+  .value.pos{ color:var(--bull-bright); }
+  .value.neg{ color:var(--bear-bright); }
+  .value.flat{ color:var(--muted); }
+
+  .bars{
+    display:flex;
+    gap:3px;
+    margin-top:12px;
+  }
+  .bars i{
+    flex:1;
+    height:5px;
+    border-radius:2px;
+    background:var(--border);
+  }
+  .bars i.on.pos{ background:var(--bull); }
+  .bars i.on.neg{ background:var(--bear); }
+
+  .state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.6;
+  }
+  .state .big{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:var(--text);
+    display:block;
+    margin-bottom:6px;
+  }
+
+  footer{
+    margin-top:22px;
+    text-align:center;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--muted);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <span class="mark">tren</span>
+        <span class="sub">// heatmap</span>
+      </div>
+      <div class="live">
+        <span class="dot" id="dot"></span>
+        <span id="updated">—</span>
+      </div>
+    </header>
+
+    <div class="legend">
+      <span>СИЛЬНЕЕ ВСЕГО</span>
+      <span>СЛАБЕЕ ВСЕГО</span>
+    </div>
+
+    <div id="content">
+      <div class="state">
+        <span class="big">Загрузка…</span>
+        Получаю данные по силе валют
+      </div>
+    </div>
+
+    <footer>обновляется автоматически ботом tren</footer>
+  </div>
+
+<script>
+  try { window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); } catch(e) {}
+
+  const content = document.getElementById('content');
+  const dot = document.getElementById('dot');
+  const updatedEl = document.getElementById('updated');
+
+  function timeAgo(iso){
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const min = Math.floor(diffMs / 60000);
+    if (min < 1) return 'обновлено только что';
+    if (min < 60) return `обновлено ${min} мин назад`;
+    const hrs = Math.floor(min/60);
+    return `обновлено ${hrs} ч назад`;
+  }
+
+  function render(data){
+    const entries = Object.entries(data.strength || {})
+      .sort((a,b) => b[1] - a[1]);
+
+    if (entries.length === 0){
+      content.innerHTML = `<div class="state"><span class="big">Пока нет данных</span>Бот ещё не отправил ни одного обновления</div>`;
+      return;
+    }
+
+    const maxAbs = Math.max(1, ...entries.map(([,v]) => Math.abs(v)));
+
+    content.innerHTML = `<div class="grid">` + entries.map(([code, val], i) => {
+      const cls = val > 3 ? 'pos' : (val < -3 ? 'neg' : 'flat');
+      const sign = val > 0 ? '+' : '';
+      const filled = Math.round((Math.abs(val)/maxAbs) * 10);
+      const bars = Array.from({length:10}, (_,j) =>
+        `<i class="${j < filled ? 'on '+cls : ''}"></i>`
+      ).join('');
+      const glowColor = val > 3 ? 'rgba(38,208,124,0.18)' : (val < -3 ? 'rgba(239,68,68,0.16)' : 'transparent');
+      const glow = Math.abs(val) > 3 ? 0.9 : 0;
+      return `
+        <div class="tile" style="--glow:${glow}; --glow-color:${glowColor}">
+          <div class="tile-top">
+            <span class="code">${code}</span>
+            <span class="rank">#${i+1}</span>
+          </div>
+          <div class="value ${cls}">${sign}${val.toFixed(0)}</div>
+          <div class="bars">${bars}</div>
+        </div>`;
+    }).join('') + `</div>`;
+
+    if (data.timestamp){
+      updatedEl.textContent = timeAgo(data.timestamp);
+      const stale = (Date.now() - new Date(data.timestamp).getTime()) > 30*60*1000;
+      dot.classList.toggle('stale', stale);
+    }
+  }
+
+  fetch('data.json?_=' + Date.now())
+    .then(r => { if(!r.ok) throw new Error('no data'); return r.json(); })
+    .then(render)
+    .catch(() => {
+      content.innerHTML = `<div class="state"><span class="big">Нет данных</span>Файл data.json не найден. Проверьте, что бот его создал и отправил в репозиторий.</div>`;
+      dot.classList.add('stale');
+      updatedEl.textContent = 'нет связи';
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tren // pairs</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: #05070c;
+    --card: #0f1420;
+    --card-alt: #141a29;
+    --border: #232b3d;
+    --text: #eef1f6;
+    --muted: #6b7385;
+    --green: #34e28a;
+    --green-soft: rgba(52, 226, 138, 0.14);
+    --amber: #ffb454;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0;
+    background: radial-gradient(circle at 50% 0%, #0d1220 0%, #05070c 60%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 460px; margin: 0 auto; padding: 24px 16px 110px; }
+
+  .brand { text-align: center; margin-bottom: 4px; }
+  .brand .mark { font-size: 22px; font-weight: 800; letter-spacing: 1px; }
+  .brand .tag {
+    font-size: 12px; color: var(--muted);
+    letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px;
+  }
+
+  .progress-wrap {
+    margin: 22px 0 6px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--green), var(--amber));
+    border-radius: 999px;
+    transition: width 0.25s ease;
+  }
+  .progress-label {
+    font-size: 11px; color: var(--muted);
+    text-align: center; margin-bottom: 22px;
+  }
+
+  .grid-title {
+    font-size: 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin: 22px 4px 10px;
+    display: flex; justify-content: space-between;
+  }
+  .grid-title .count { color: var(--green); font-weight: 700; }
+
+  .pair-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow-x: auto;
+    transition: border-color 0.15s ease;
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* IE / старый Edge */
+  }
+  .pair-block::-webkit-scrollbar {
+    display: none;               /* Chrome, Safari, новый Edge, Telegram WebView */
+  }
+  .pair-block.on { border-color: var(--green); }
+
+  .pair-icon {
+    width: 46px; height: 34px;
+    border-radius: 9px;
+    background: var(--card-alt);
+    display: flex; align-items: center; justify-content: center;
+    gap: 2px;
+    flex-shrink: 0;
+    padding: 4px;
+  }
+  .pair-icon img, .pair-icon .flag svg {
+    width: 20px;
+    height: 15px;
+    border-radius: 2px;
+    display: block;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
+  }
+  .pair-icon .flag { display: flex; }
+  .pair-block.on .pair-icon { background: var(--green-soft); }
+
+  .pair-code {
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+    width: 66px;
+  }
+
+  .tf-strip {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .tf-pill {
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: var(--card-alt);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+  .tf-pill.on {
+    background: var(--green);
+    border-color: var(--green);
+    color: #05070c;
+  }
+
+  .bottom-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 26px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="mark">tren</div>
+    <div class="tag">Настройка анализа</div>
+  </div>
+
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="progress-label" id="progressLabel">Выберите пары и таймфрейм для каждой</div>
+
+  <div class="grid-title">Валютные пары <span class="count" id="pairCount">0/3</span></div>
+  <div id="pairGrid"></div>
+
+  <div class="bottom-note">Нажмите на пару, чтобы выбрать для неё таймфреймы. Бот tren будет анализировать каждую пару на её собственных таймфреймах.</div>
+</div>
+
+<script>
+  const tg = window.Telegram ? window.Telegram.WebApp : null;
+  if (tg) { tg.expand(); tg.ready(); }
+
+  const FLAG_SVG = {
+    eu: `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="40" fill="#003399"/><g fill="#FFCC00"><circle cx="30" cy="8" r="1.6"/><circle cx="30" cy="32" r="1.6"/><circle cx="18" cy="11.2" r="1.6"/><circle cx="42" cy="11.2" r="1.6"/><circle cx="18" cy="28.8" r="1.6"/><circle cx="42" cy="28.8" r="1.6"/><circle cx="13.6" cy="20" r="1.6"/><circle cx="46.4" cy="20" r="1.6"/><circle cx="21.6" cy="15" r="1.6"/><circle cx="38.4" cy="15" r="1.6"/><circle cx="21.6" cy="25" r="1.6"/><circle cx="38.4" cy="25" r="1.6"/></g></svg>`,
+    us: `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="40" fill="#B22234"/><g fill="#fff"><rect y="3.1" width="60" height="3.1"/><rect y="9.2" width="60" height="3.1"/><rect y="15.4" width="60" height="3.1"/><rect y="21.5" width="60" height="3.1"/><rect y="27.7" width="60" height="3.1"/><rect y="33.8" width="60" height="3.1"/></g><rect width="24" height="21.5" fill="#3C3B6E"/></svg>`,
+    gb: `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="40" fill="#00247D"/><path d="M0,0 60,40 M60,0 0,40" stroke="#fff" stroke-width="6"/><path d="M0,0 60,40 M60,0 0,40" stroke="#CF142B" stroke-width="2"/><path d="M30,0 30,40 M0,20 60,20" stroke="#fff" stroke-width="10"/><path d="M30,0 30,40 M0,20 60,20" stroke="#CF142B" stroke-width="4"/></svg>`,
+    jp: `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="40" fill="#fff"/><circle cx="30" cy="20" r="11" fill="#BC002D"/></svg>`
+  };
+
+  const PAIRS = [
+    { code: "EUR/USD", desc: "Евро / Доллар США", flags: ["eu", "us"] },
+    { code: "GBP/USD", desc: "Фунт / Доллар США", flags: ["gb", "us"] },
+    { code: "USD/JPY", desc: "Доллар США / Йена", flags: ["us", "jp"] }
+  ];
+  const TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "4h"];
+
+  // pair -> Set таймфреймов. Пара считается "выбранной", если у неё есть хотя бы 1 таймфрейм.
+  const state = {};
+  PAIRS.forEach(p => { state[p.code] = new Set(); });
+  state["EUR/USD"].add("5m"); // разумное значение по умолчанию для первой пары
+
+  const pairGrid = document.getElementById("pairGrid");
+  const pairCount = document.getElementById("pairCount");
+  const progressBar = document.getElementById("progressBar");
+  const progressLabel = document.getElementById("progressLabel");
+
+  function render() {
+    pairGrid.innerHTML = "";
+    PAIRS.forEach(p => {
+      const isOn = state[p.code].size > 0;
+      const block = document.createElement("div");
+      block.className = "pair-block" + (isOn ? " on" : "");
+
+      const icon = document.createElement("div");
+      icon.className = "pair-icon";
+      icon.innerHTML = `<span class="flag">${FLAG_SVG[p.flags[0]]}</span><span class="flag">${FLAG_SVG[p.flags[1]]}</span>`;
+
+      const code = document.createElement("div");
+      code.className = "pair-code";
+      code.textContent = p.code;
+
+      const strip = document.createElement("div");
+      strip.className = "tf-strip";
+      TIMEFRAMES.forEach(tf => {
+        const pill = document.createElement("div");
+        pill.className = "tf-pill" + (state[p.code].has(tf) ? " on" : "");
+        pill.textContent = tf;
+        pill.addEventListener("click", () => {
+          if (state[p.code].has(tf)) {
+            state[p.code].delete(tf);
+          } else {
+            state[p.code].add(tf);
+          }
+          render();
+        });
+        strip.appendChild(pill);
+      });
+
+      block.appendChild(icon);
+      block.appendChild(code);
+      block.appendChild(strip);
+      pairGrid.appendChild(block);
+    });
+
+    const activePairs = PAIRS.filter(p => state[p.code].size > 0);
+    pairCount.textContent = `${activePairs.length}/${PAIRS.length}`;
+    const pct = Math.round((activePairs.length / PAIRS.length) * 100);
+    progressBar.style.width = pct + "%";
+    progressLabel.textContent = activePairs.length === 0
+      ? "Выберите пары и таймфрейм для каждой"
+      : `Готово: ${activePairs.map(p => `${p.code} (${state[p.code].size})`).join(", ")}`;
+
+    if (!tg) return;
+    const ok = activePairs.length > 0;
+    tg.MainButton.setText(ok ? "Сохранить настройки" : "Выберите хотя бы одну пару");
+    tg.MainButton.show();
+    ok ? tg.MainButton.enable() : tg.MainButton.disable();
+  }
+
+  if (tg) {
+    tg.MainButton.onClick(() => {
+      const selections = {};
+      PAIRS.forEach(p => {
+        if (state[p.code].size > 0) selections[p.code] = Array.from(state[p.code]);
+      });
+      if (Object.keys(selections).length === 0) return;
+      tg.sendData(JSON.stringify({
+        type: "pairs_settings_v2",
+        selections
+      }));
+      tg.close();
+    });
+  }
+
+  render();
+</script>
+</body>
+</html>

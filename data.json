@@ -1,12 +1,4 @@
 {
-  "strength": {
-    "EUR": 34,
-    "USD": -12,
-    "GBP": 21,
-    "JPY": -28,
-    "AUD": 8,
-    "CAD": -5
-  },
-  "timestamp": "2026-08-14T10:00:00Z"
+  "strength": {},
+  "timestamp": "2026-08-22T08:16:02.199933Z"
 }
- 

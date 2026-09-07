@@ -148,7 +148,7 @@
   <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
   <div class="progress-label" id="progressLabel">Выберите пары и таймфрейм для каждой</div>
 
-  <div class="grid-title">Валютные пары <span class="count" id="pairCount">0/3</span></div>
+  <div class="grid-title">Валютные пары <span class="count" id="pairCount">0/12</span></div>
   <div id="pairGrid"></div>
 
   <div class="bottom-note">Нажмите на пару, чтобы выбрать для неё таймфреймы. Бот tren будет анализировать каждую пару на её собственных таймфреймах.</div>
@@ -162,13 +162,26 @@
     eu: `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="40" fill="#003399"/><g fill="#FFCC00"><circle cx="30" cy="8" r="1.6"/><circle cx="30" cy="32" r="1.6"/><circle cx="18" cy="11.2" r="1.6"/><circle cx="42" cy="11.2" r="1.6"/><circle cx="18" cy="28.8" r="1.6"/><circle cx="42" cy="28.8" r="1.6"/><circle cx="13.6" cy="20" r="1.6"/><circle cx="46.4" cy="20" r="1.6"/><circle cx="21.6" cy="15" r="1.6"/><circle cx="38.4" cy="15" r="1.6"/><circle cx="21.6" cy="25" r="1.6"/><circle cx="38.4" cy="25" r="1.6"/></g></svg>`,
     us: `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="40" fill="#B22234"/><g fill="#fff"><rect y="3.1" width="60" height="3.1"/><rect y="9.2" width="60" height="3.1"/><rect y="15.4" width="60" height="3.1"/><rect y="21.5" width="60" height="3.1"/><rect y="27.7" width="60" height="3.1"/><rect y="33.8" width="60" height="3.1"/></g><rect width="24" height="21.5" fill="#3C3B6E"/></svg>`,
     gb: `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="40" fill="#00247D"/><path d="M0,0 60,40 M60,0 0,40" stroke="#fff" stroke-width="6"/><path d="M0,0 60,40 M60,0 0,40" stroke="#CF142B" stroke-width="2"/><path d="M30,0 30,40 M0,20 60,20" stroke="#fff" stroke-width="10"/><path d="M30,0 30,40 M0,20 60,20" stroke="#CF142B" stroke-width="4"/></svg>`,
-    jp: `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="40" fill="#fff"/><circle cx="30" cy="20" r="11" fill="#BC002D"/></svg>`
+    jp: `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="40" fill="#fff"/><circle cx="30" cy="20" r="11" fill="#BC002D"/></svg>`,
+    ch: `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="40" fill="#DA291C"/><rect x="26" y="8" width="8" height="24" fill="#fff"/><rect x="18" y="16" width="24" height="8" fill="#fff"/></svg>`,
+    ca: `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="40" fill="#fff"/><rect width="15" height="40" fill="#D80621"/><rect x="45" width="15" height="40" fill="#D80621"/><path d="M30 8 L33 16 L39 14 L36 22 L41 24 L30 27 L19 24 L24 22 L21 14 L27 16 Z" fill="#D80621"/></svg>`,
+    au: `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="40" fill="#00247D"/><g transform="scale(0.5)"><path d="M0,0 60,40 M60,0 0,40" stroke="#fff" stroke-width="6"/><path d="M0,0 60,40 M60,0 0,40" stroke="#CF142B" stroke-width="2"/><path d="M30,0 30,40 M0,20 60,20" stroke="#fff" stroke-width="10"/><path d="M30,0 30,40 M0,20 60,20" stroke="#CF142B" stroke-width="4"/></g><circle cx="15" cy="30" r="3" fill="#fff"/><circle cx="45" cy="10" r="2" fill="#fff"/><circle cx="52" cy="18" r="2" fill="#fff"/><circle cx="45" cy="30" r="2" fill="#fff"/><circle cx="40" cy="20" r="1.4" fill="#fff"/></svg>`,
+    nz: `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="40" fill="#00247D"/><g transform="scale(0.5)"><path d="M0,0 60,40 M60,0 0,40" stroke="#fff" stroke-width="6"/><path d="M0,0 60,40 M60,0 0,40" stroke="#CF142B" stroke-width="2"/><path d="M30,0 30,40 M0,20 60,20" stroke="#fff" stroke-width="10"/><path d="M30,0 30,40 M0,20 60,20" stroke="#CF142B" stroke-width="4"/></g><g fill="#fff"><circle cx="45" cy="10" r="2.4"/><circle cx="52" cy="18" r="2.4"/><circle cx="45" cy="30" r="2.4"/><circle cx="38" cy="20" r="2.4"/></g><g fill="#CC142B"><circle cx="45" cy="10" r="1.2"/><circle cx="52" cy="18" r="1.2"/><circle cx="45" cy="30" r="1.2"/><circle cx="38" cy="20" r="1.2"/></g></svg>`
   };
 
   const PAIRS = [
     { code: "EUR/USD", desc: "Евро / Доллар США", flags: ["eu", "us"] },
     { code: "GBP/USD", desc: "Фунт / Доллар США", flags: ["gb", "us"] },
-    { code: "USD/JPY", desc: "Доллар США / Йена", flags: ["us", "jp"] }
+    { code: "USD/JPY", desc: "Доллар США / Йена", flags: ["us", "jp"] },
+    { code: "USD/CHF", desc: "Доллар США / Франк", flags: ["us", "ch"] },
+    { code: "AUD/USD", desc: "Австралиец / Доллар США", flags: ["au", "us"] },
+    { code: "USD/CAD", desc: "Доллар США / Канадец", flags: ["us", "ca"] },
+    { code: "NZD/USD", desc: "Новозеландец / Доллар США", flags: ["nz", "us"] },
+    { code: "EUR/GBP", desc: "Евро / Фунт", flags: ["eu", "gb"] },
+    { code: "EUR/JPY", desc: "Евро / Йена", flags: ["eu", "jp"] },
+    { code: "GBP/JPY", desc: "Фунт / Йена", flags: ["gb", "jp"] },
+    { code: "EUR/CHF", desc: "Евро / Франк", flags: ["eu", "ch"] },
+    { code: "AUD/JPY", desc: "Австралиец / Йена", flags: ["au", "jp"] }
   ];
   const TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "4h"];
 
